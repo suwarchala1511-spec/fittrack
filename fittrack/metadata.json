@@ -1,0 +1,5 @@
+{
+  "name": "FitTrack",
+  "description": "A comprehensive fitness tracking application that monitors physical activities, food intake, and sleep, providing AI-driven insights and real-time goal tracking.",
+  "requestFramePermissions": ["geolocation"]
+}

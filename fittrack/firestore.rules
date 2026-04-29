@@ -1,0 +1,199 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: userId (matches auth.uid)
+// Fields:
+//   - uid: string (required) - matches auth.uid
+//   - displayName: string (optional)
+//   - email: string (required)
+//   - points: number (required) - user's total points
+//
+// Collection: activities
+// Document ID: activityId
+// Fields:
+//   - id: string (required)
+//   - userId: string (required) - matches auth.uid
+//   - type: string (required) - enum: ["walking", "running", "cycling"]
+//   - duration: number (required) - in minutes
+//   - distance: number (optional) - in km
+//   - calories: number (optional) - in kcal
+//   - timestamp: string (required) - ISO 8601
+//
+// Collection: food
+// Document ID: foodId
+// Fields:
+//   - id: string (required)
+//   - userId: string (required) - matches auth.uid
+//   - name: string (required)
+//   - calories: number (required)
+//   - protein: number (optional)
+//   - carbs: number (optional)
+//   - fat: number (optional)
+//   - timestamp: string (required) - ISO 8601
+//
+// Collection: sleep
+// Document ID: sleepId
+// Fields:
+//   - id: string (required)
+//   - userId: string (required) - matches auth.uid
+//   - startTime: string (required) - ISO 8601
+//   - endTime: string (required) - ISO 8601
+//   - quality: number (optional) - 1-10
+//   - timestamp: string (required) - ISO 8601
+//
+// Collection: goals
+// Document ID: goalId
+// Fields:
+//   - id: string (required)
+//   - userId: string (required) - matches auth.uid
+//   - type: string (required) - enum: ["daily", "weekly", "monthly"]
+//   - category: string (required) - enum: ["activity", "calories", "sleep", "steps"]
+//   - target: number (required)
+//   - current: number (required)
+//   - points: number (required)
+//   - completed: boolean (required)
+//   - deadline: string (required) - ISO 8601
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ( (request.auth.token.email == "suwarchala1511@gmail.com" && request.auth.token.email_verified == true) ||
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin') );
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'displayName', 'email', 'points', 'role', 'badges', 'dailyGoalProgress', 'weeklyGoalProgress', 'monthlyGoalProgress', 'photoURL', 'isGuest', 'theme']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             (data.email == "" || isValidEmail(data.email)) &&
+             data.points is number && data.points >= 0 &&
+             (!('displayName' in data) || data.displayName is string) &&
+             (!('dailyGoalProgress' in data) || data.dailyGoalProgress is number) &&
+             (!('weeklyGoalProgress' in data) || data.weeklyGoalProgress is number) &&
+             (!('monthlyGoalProgress' in data) || data.monthlyGoalProgress is number) &&
+             (!('badges' in data) || data.badges is list) &&
+             (!('isGuest' in data) || data.isGuest is bool) &&
+             (!('theme' in data) || data.theme in ['default', 'jungle', 'horror', 'cyberpunk', 'olympus']) &&
+             (!('photoURL' in data) || data.photoURL is string || data.photoURL == null);
+    }
+
+    function isValidActivity(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'type', 'duration', 'distance', 'calories', 'timestamp']) &&
+             data.id is string &&
+             data.userId == request.auth.uid &&
+             data.type in ['walking', 'running', 'cycling'] &&
+             data.duration is number && data.duration >= 0 &&
+             isValidDateString(data.timestamp);
+    }
+
+    function isValidFood(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'name', 'calories', 'protein', 'carbs', 'fat', 'timestamp']) &&
+             data.id is string &&
+             data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.calories is number && data.calories >= 0 &&
+             isValidDateString(data.timestamp);
+    }
+
+    function isValidSleep(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'startTime', 'endTime', 'quality', 'timestamp']) &&
+             data.id is string &&
+             data.userId == request.auth.uid &&
+             isValidDateString(data.startTime) &&
+             isValidDateString(data.endTime) &&
+             data.quality is number && data.quality >= 1 && data.quality <= 10 &&
+             isValidDateString(data.timestamp);
+    }
+
+    function isValidGoal(data) {
+      return hasOnlyAllowedFields(['id', 'userId', 'type', 'category', 'target', 'current', 'points', 'completed', 'deadline', 'reminderTime', 'reminderEnabled']) &&
+             data.id is string &&
+             data.userId == request.auth.uid &&
+             data.type in ['daily', 'weekly', 'monthly'] &&
+             data.category in ['activity', 'calories', 'sleep', 'steps', 'activity_km'] &&
+             data.target is number && data.target >= 0 &&
+             data.current is number && data.current >= 0 &&
+             data.points is number && data.points >= 0 &&
+             data.completed is bool &&
+             (!('reminderTime' in data) || data.reminderTime is string) &&
+             (!('reminderEnabled' in data) || data.reminderEnabled is bool) &&
+             isValidDateString(data.deadline);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.get('role', 'user') == 'user' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.get('role', 'user') == resource.data.get('role', 'user') || isAdmin());
+    }
+
+    match /activities/{activityId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidActivity(request.resource.data);
+      allow update: if isDocOwner() && isValidActivity(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /food/{foodId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidFood(request.resource.data);
+      allow update: if isDocOwner() && isValidFood(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /sleep/{sleepId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidSleep(request.resource.data);
+      allow update: if isDocOwner() && isValidSleep(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /goals/{goalId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidGoal(request.resource.data);
+      allow update: if isDocOwner() && isValidGoal(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+  }
+}

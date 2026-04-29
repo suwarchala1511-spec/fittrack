@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "activities": {
+      "title": "Activity",
+      "description": "Physical activity record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["walking", "running", "cycling"] },
+        "duration": { "type": "number" },
+        "distance": { "type": "number" },
+        "calories": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "duration", "timestamp"]
+    },
+    "food": {
+      "title": "Food Intake",
+      "description": "Daily food consumption record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fat": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "calories", "timestamp"]
+    },
+    "sleep": {
+      "title": "Sleep Record",
+      "description": "Sleep duration and quality record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "quality": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "startTime", "endTime", "timestamp"]
+    },
+    "goals": {
+      "title": "Goal",
+      "description": "Fitness goal record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["daily", "weekly", "monthly"] },
+        "category": { "type": "string", "enum": ["activity", "calories", "sleep", "steps", "activity_km"] },
+        "target": { "type": "number" },
+        "current": { "type": "number" },
+        "points": { "type": "number" },
+        "completed": { "type": "boolean" },
+        "reminderTime": { "type": "string" },
+        "reminderEnabled": { "type": "boolean" },
+        "deadline": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "category", "target", "deadline"]
+    },
+    "users": {
+      "title": "User Profile",
+      "description": "User profile and points record",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "points": { "type": "number" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "photoURL": { "type": "string" },
+        "theme": { "type": "string", "enum": ["default", "jungle", "horror", "cyberpunk", "olympus"] },
+        "isGuest": { "type": "boolean" },
+        "dailyGoalProgress": { "type": "number" },
+        "weeklyGoalProgress": { "type": "number" },
+        "monthlyGoalProgress": { "type": "number" },
+        "badges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "icon": { "type": "string" },
+              "earnedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/activities/{activityId}": {
+      "schema": "activities",
+      "description": "Collection of user activities"
+    },
+    "/food/{foodId}": {
+      "schema": "food",
+      "description": "Collection of food intake records"
+    },
+    "/sleep/{sleepId}": {
+      "schema": "sleep",
+      "description": "Collection of sleep records"
+    },
+    "/goals/{goalId}": {
+      "schema": "goals",
+      "description": "Collection of user goals"
+    },
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "Collection of user profiles"
+    }
+  }
+}

@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --bg-primary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent: #4f46e5;
+  --accent-secondary: #818cf8;
+  --border: #e2e8f0;
+  --success: #10b981;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --card-radius: 1.5rem;
+  --bg-pattern: radial-gradient(#e2e8f0 1px, transparent 1px);
+  --bg-pattern-size: 20px 20px;
+}
+
+[data-theme='jungle'] {
+  --bg-primary: #064e3b;
+  --bg-card: #065f46;
+  --bg-sidebar: #064e3b;
+  --text-primary: #ecfdf5;
+  --text-secondary: #a7f3d0;
+  --accent: #fbbf24;
+  --accent-secondary: #fcd34d;
+  --border: #047857;
+  --success: #34d399;
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  --card-radius: 2rem;
+  --bg-pattern: radial-gradient(#047857 1px, transparent 1px);
+  --bg-pattern-size: 30px 30px;
+}
+
+[data-theme='horror'] {
+  --bg-primary: #0a0a0a;
+  --bg-card: #1a1a1a;
+  --bg-sidebar: #000000;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent: #991b1b;
+  --accent-secondary: #ef4444;
+  --border: #262626;
+  --success: #b91c1c;
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --card-radius: 0.5rem;
+  --bg-pattern: linear-gradient(rgba(153, 27, 27, 0.05) 1px, transparent 1px);
+  --bg-pattern-size: 100% 40px;
+}
+
+[data-theme='cyberpunk'] {
+  --bg-primary: #020617;
+  --bg-card: #0f172a;
+  --bg-sidebar: #020617;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent: #d946ef;
+  --accent-secondary: #22d3ee;
+  --border: #1e293b;
+  --success: #22d3ee;
+  --shadow: 0 0 15px rgba(217, 70, 239, 0.3);
+  --card-radius: 0.25rem;
+  --bg-pattern: linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+  --bg-pattern-size: 50px 50px;
+}
+
+[data-theme='retro'] {
+  --bg-primary: #faf3eb;
+  --bg-card: #ffffff;
+  --bg-sidebar: #f4e1d2;
+  --text-primary: #433422;
+  --text-secondary: #8c7851;
+  --accent: #d97706;
+  --accent-secondary: #0d9488;
+  --border: #e5d5c5;
+  --success: #0d9488;
+  --shadow: 4px 4px 0px #e5d5c5;
+  --card-radius: 0rem;
+  --bg-pattern: repeating-linear-gradient(45deg, #f4e1d2, #f4e1d2 10px, #faf3eb 10px, #faf3eb 20px);
+  --bg-pattern-size: 100% 100%;
+}
+
+[data-theme='olympus'] {
+  --bg-primary: #fdfbf7;
+  --bg-card: #ffffff;
+  --bg-sidebar: #fdfbf7;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent: #d4af37;
+  --accent-secondary: #f1c40f;
+  --border: #e2e8f0;
+  --success: #d4af37;
+  --shadow: 0 4px 6px -1px rgba(212, 175, 55, 0.1);
+  --card-radius: 1.5rem;
+  --bg-pattern: radial-gradient(#d4af37 1px, transparent 1px);
+  --bg-pattern-size: 40px 40px;
+}
+
+body {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
